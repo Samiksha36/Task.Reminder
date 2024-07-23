@@ -60,7 +60,7 @@ app.post('/addTask', isAuthenticated, async (req, res) => {
 });
 
 // Delete a Task (Authenticated)
-app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
+/*app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
     try {
         await Task.findByIdAndDelete(req.params.id);
         res.status(200).send('Task deleted successfully');
@@ -68,7 +68,7 @@ app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
         console.error('Error deleting task:', error);
         res.status(500).send('Error deleting task');
     }
-});
+});*/
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');
