@@ -6,8 +6,11 @@ const schedule = require('node-schedule');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
+const User = require('./models/User');
+
 
 const app = express();
+app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
 app.use(session({
@@ -31,7 +34,7 @@ const taskSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-  username: {
+  email: {
     type: String,
     required: true,
     //unique: true
@@ -42,25 +45,6 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Hash the password before saving
-userSchema.pre('save', async function(next) {
-  if (this.isModified('password') || this.isNew) {
-    try {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-      next();
-    } catch (err) {
-      next(err);
-    }
-  } else {
-    return next();
-  }
-});
-
-// Method to compare password
-userSchema.methods.comparePassword = async function(password) {
-  return bcrypt.compare(password, this.password);
-};
 
 const User = mongoose.model('User', userSchema);
 
@@ -77,8 +61,6 @@ const Task = mongoose.model('Task', taskSchema);
 //         res.status(401).send('Unauthorized');
 //     }
 // }
-
-
 // app.post('/addTask', Authenticated,async (req, res) => {
 //     try {
 //         const { name, presentDate, futureDate, priority } = req.body;
@@ -97,6 +79,37 @@ const Task = mongoose.model('Task', taskSchema);
 //         res.status(500).send('Error adding task');
 //     }
 // });
+
+app.post('/login',async(req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    let user = await User.findOne({ email });
+    if (user) {
+        return res.status(400).json({ msg: 'User already exists' });
+    }
+
+    user = new User({
+        email,
+        password
+    });  
+
+    // Hash the password before saving
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+
+        await user.save();
+        res.json(user);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+
+    // Method to compare password
+    userSchema.methods.comparePassword = async function(password) {
+    return bcrypt.compare(password, this.password);
+  }
+});
 
 //Create a Task (Authenticated)
 app.post('/addTask',async (req, res) => {
@@ -131,13 +144,19 @@ app.post('/addTask',async (req, res) => {
 app.use(express.static(path.join(__dirname, 'view')));
 
 app.get('/login', async(req, res) => {
+  /*try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }*/
     res.sendFile(path.join(__dirname, 'view', 'login.html'));
 });
 app.get('/index', async(req, res) => {
     res.sendFile(path.join(__dirname, 'view', 'index.html'));
 });
 app.get("/", (req, res) => {
-    res.json({ message: "Hello from Samiksha " });
+    res.json({ message: "Hello Users" });
   });
 app.listen(3000, () => {
     console.log('Server running on port 3000');
