@@ -40,8 +40,10 @@ app.post('/signup', async (req, res) => {
         const { username, email, password } = req.body;
         const user = new User({ username, email, password });
         await user.save();
-        req.session.user = user;
-        res.redirect('/index');
+        req.session.user = user;        
+        res.redirect(`/login?message=${encodeURIComponent('Signup successful')}`);
+
+        
     } catch (error) {
         console.error('Error during registration:', error);
         res.status(500).send('Error during registration');
@@ -58,11 +60,14 @@ app.post('/login', async (req, res) => {
         }
         const isMatch = await user.comparePassword(password);
         if (isMatch) {
-            req.session.user = user;
-            res.redirect('/index');
+            req.session.user = user;        
+            res.redirect(`/index?message=${encodeURIComponent('Login successful')}`);
+
+
         } else {
             res.status(401).send('Invalid email or password');
         }
+       
     } catch (error) {
         console.error('Error during login:', error);
         res.status(500).send('Error during login');
