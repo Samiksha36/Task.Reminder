@@ -171,7 +171,7 @@ app.get('/login', async(req, res) => {
   }*/
     res.sendFile(path.join(__dirname, 'view', 'login.html'));
 });
-app.get('/index', async(req, res) => {
+app.get('/addTask', async(req, res) => {
     res.sendFile(path.join(__dirname, 'view', 'index.html'));
 });
 app.get("/", (req, res) => {
