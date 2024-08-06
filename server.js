@@ -6,7 +6,7 @@ const schedule = require('node-schedule');
 const session = require('express-session');
 const path = require('path');
 const bcrypt = require('bcrypt');
-const User = require('./models/User');
+//const User = require('./models/User');
 const twilio = require('twilio');
 
 
@@ -57,9 +57,9 @@ const userSchema = new mongoose.Schema({
 });
 
 
-const User = mongoose.model('User', userSchema);
+const Users = mongoose.model('Users', userSchema);
 
-module.exports = User;
+module.exports = Users;
 
 
 const Task = mongoose.model('Task', taskSchema);
@@ -95,12 +95,12 @@ app.post('/login',async(req, res) => {
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ email });
+    let user = await Users.findOne({ email });
     if (user) {
         return res.status(400).json({ msg: 'User already exists' });
     }
 
-    user = new User({
+    user = new Users({
         email,
         password
     });  
