@@ -135,7 +135,7 @@ app.post('/addTask',async (req, res) => {
             
             // Send SMS notification
             client.messages.create({
-              body: `Reminder: ${name} is due now!`,
+              body: `Reminder: Call ${name} Today. It's their due date`,
               from: '+15865018127', // Replace with your Twilio phone number
               to: fixedPhoneNumber
           })
