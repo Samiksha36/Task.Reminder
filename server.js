@@ -21,6 +21,16 @@ app.use(session({
     cookie: { secure: false } // For development, set to true if using HTTPS in production
 }));
 
+//Twilio credintials
+const accountSid = 'AC21763206c9f0cd90cc066200f6692d2f';
+const authToken = 'd21cf4d87c94552c7aacaecee20f8948';
+const client = new twilio(accountSid, authToken);
+
+
+//fixed phone number for sms
+const fixedPhoneNumber = '+91-9370468626'; //replaced with twilio phone number
+
+
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/taskReminderDB', { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
@@ -122,7 +132,15 @@ app.post('/addTask',async (req, res) => {
         // Schedule the task
         schedule.scheduleJob(new Date(futureDate), function() {
             console.log(`Reminder for ${name}`);
-            // Send alert to user (this can be an email, push notification, etc.)
+            
+            // Send SMS notification
+            client.messages.create({
+              body: `Reminder: ${name} is due now!`,
+              from: '+15865018127', // Replace with your Twilio phone number
+              to: fixedPhoneNumber
+          })
+          .then(message => console.log(`SMS sent: ${message.sid}`))
+          .catch(error => console.error('Error sending SMS:', error));
         });
 
         res.status(200).send('Task added successfully');
