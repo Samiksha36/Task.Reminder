@@ -5,8 +5,10 @@ const cors = require('cors');
 const session = require('express-session');
 const path = require('path');
 const schedule = require('node-schedule'); 
-const User = require('./models/User'); // Ensure this path is correct
-const Task = require('./models/Task'); // Ensure this path is correct
+const User = require('./models/User'); 
+const Task = require('./models/Task'); 
+const twilio = require('twilio');
+
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -18,6 +20,14 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false } // For development, set to true if using HTTPS in production
 }));
+//Twilio credintials
+const accountSid = 'AC21763206c9f0cd90cc066200f6692d2f';
+const authToken = 'd21cf4d87c94552c7aacaecee20f8948';
+const client = new twilio(accountSid, authToken);
+
+
+//fixed phone number for sms
+const fixedPhoneNumber = '+91-9370468626'; //replaced with twilio phone number
 
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/taskReminderDB', {
@@ -86,11 +96,19 @@ app.post('/addTask', isAuthenticated, async (req, res) => {
         const task = new Task({ name, presentDate, futureDate, priority });
         await task.save();
 
-        // Schedule the task
-        schedule.scheduleJob(new Date(futureDate), function() {
-            console.log(`Reminder for ${name}`);
-            // Implement actual reminder logic here
-        });
+                // Schedule the task
+                schedule.scheduleJob(new Date(futureDate), function() {
+                    console.log(`Reminder for ${name}`);
+                    
+                    // Send SMS notification
+                    client.messages.create({
+                      body: `Reminder: Call ${name} Today. It's their due date`,
+                      from: '+15865018127', // Replace with your Twilio phone number
+                      to: fixedPhoneNumber
+                  })
+                  .then(message => console.log(`SMS sent: ${message.sid}`))
+                  .catch(error => console.error('Error sending SMS:', error));
+                });
 
         res.status(200).send('Task added successfully');
     } catch (error) {
@@ -100,7 +118,7 @@ app.post('/addTask', isAuthenticated, async (req, res) => {
 });
 
 // Delete a Task (Authenticated)
-app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
+/*app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
     try {
         await Task.findByIdAndDelete(req.params.id);
         res.status(200).send('Task deleted successfully');
@@ -108,7 +126,7 @@ app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
         console.error('Error deleting task:', error);
         res.status(500).send('Error deleting task');
     }
-});
+});*/
 
 app.use(express.static(path.join(__dirname, 'view')));
 
