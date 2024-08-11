@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "name": "taskreminderapp",
   "version": "1.0.0",
   "main": "index.js",
@@ -15,17 +14,9 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "mongoose": "^8.5.1",
-=======
-  "dependencies": {
     "bcrypt": "^5.1.1",
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
     "express-session": "^1.18.0",
-    "mongoose": "^8.5.2",
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
     "node-schedule": "^2.1.1",
-    "bcrypt": "^5.1.1",
-    "express-session": "^1.18.0",
     "twilio": "^5.2.2"
   }
 }

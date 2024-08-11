@@ -11,10 +11,6 @@ const twilio = require('twilio');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
-<<<<<<< HEAD
-
-=======
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
 app.use(bodyParser.json());
 app.use(cors());
 app.use(session({
@@ -30,7 +26,7 @@ mongoose.connect('mongodb://localhost:27017/taskReminderDB', {
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-<<<<<<< HEAD
+
 // Define the Schema
 const taskSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -42,9 +38,6 @@ const taskSchema = new mongoose.Schema({
 const task = mongoose.model('task', taskSchema);
 
 //Twilio credintials
-=======
-    //Twilio credintials
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
 const accountSid = 'AC21763206c9f0cd90cc066200f6692d2f';
 const authToken = 'd21cf4d87c94552c7aacaecee20f8948';
 const client = new twilio(accountSid, authToken);
@@ -56,10 +49,6 @@ const fixedPhoneNumber = '+91-9370468626'; //replaced with twilio phone number
 // Middleware to check if the user is authenticated
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
-<<<<<<< HEAD
-
-=======
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
         next();
     } else {
         res.status(401).send('Unauthorized');
@@ -101,24 +90,16 @@ app.post('/login', async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-
-=======
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
 // Create a Task (Authenticated)
 app.post('/addTask', isAuthenticated, async (req, res) => {
     try {
         const { name, presentDate, futureDate, priority } = req.body;
 
-<<<<<<< HEAD
-        // Validate date strings if needed
-=======
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
+// Validate date strings if needed
         if (!name || !presentDate || !futureDate || !priority) {
             return res.status(400).send('Missing required fields');
         }
 
-<<<<<<< HEAD
         // Ensure that the dates are valid Date objects
         const futureDateObj = new Date(futureDate);
 
@@ -126,7 +107,7 @@ app.post('/addTask', isAuthenticated, async (req, res) => {
             return res.status(400).send('Invalid date format');
         }
 
-        const task = new Task({
+        const Task = new Task({
             name,
             presentDate,
             futureDate: futureDateObj,
@@ -149,7 +130,7 @@ app.post('/addTask', isAuthenticated, async (req, res) => {
         })
         .then(message => console.log(`SMS sent: ${message.sid}`))
         .catch(error => console.error('Error sending SMS:', error));
-=======
+
         const task = new Task({ name, presentDate, futureDate, priority });
         await task.save();
 
@@ -167,7 +148,6 @@ app.post('/addTask', isAuthenticated, async (req, res) => {
                   .catch(error => console.error('Error sending SMS:', error));
                 });
         
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
 
         res.status(200).send('Task added successfully');
     } catch (error) {
@@ -175,20 +155,6 @@ app.post('/addTask', isAuthenticated, async (req, res) => {
         res.status(500).send('Error adding task');
     }
 });
-
-<<<<<<< HEAD
-=======
-// Delete a Task (Authenticated)
-/*app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
-    try {
-        await Task.findByIdAndDelete(req.params.id);
-        res.status(200).send('Task deleted successfully');
-    } catch (error) {
-        console.error('Error deleting task:', error);
-        res.status(500).send('Error deleting task');
-    }
-});*/
->>>>>>> a62b0d83539de9a6139789ed7932e653952dafe6
 
 app.use(express.static(path.join(__dirname, 'view')));
 
