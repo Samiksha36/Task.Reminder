@@ -2,8 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const schedule = require('node-schedule');
-const session = require('express-session');
 const session = require('express-session');
 const path = require('path');
 const schedule = require('node-schedule'); 
@@ -14,7 +12,7 @@ const twilio = require('twilio');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
-//f70df1e56736616dbe304f806795763ce790b5e5
+
 app.use(bodyParser.json());
 app.use(cors());
 app.use(session({
@@ -38,7 +36,7 @@ const taskSchema = new mongoose.Schema({
     priority: { type: Number, required: true, min: 1000, max: 1000000 }
 });
 
-const Task = mongoose.model('Task', taskSchema);
+const task = mongoose.model('task', taskSchema);
 
 //Twilio credintials
 const accountSid = 'AC21763206c9f0cd90cc066200f6692d2f';
@@ -58,7 +56,7 @@ mongoose.connect('mongodb://localhost:27017/taskReminderDB', {
 // Middleware to check if the user is authenticated
 function isAuthenticated(req, res, next) {
     if (req.session.user) {
-//f70df1e56736616dbe304f806795763ce790b5e5
+
         next();
     } else {
         res.status(401).send('Unauthorized');
@@ -106,58 +104,55 @@ app.post('/login', async (req, res) => {
     }
 });
 
-//f70df1e56736616dbe304f806795763ce790b5e5
+
 // Create a Task (Authenticated)
 app.post('/addTask', isAuthenticated, async (req, res) => {
     try {
         const { name, presentDate, futureDate, priority } = req.body;
 
-        const task = new Task({ name, presentDate, futureDate, priority });
-        await task.save();
-
-        // Schedule the task
-        schedule.scheduleJob(new Date(futureDate), function() {
-            console.log(`Reminder for ${name}`);
-            // Send alert to user (this can be an email, push notification, etc.)
-        });
-
-
+        // Validate date strings if needed
         if (!name || !presentDate || !futureDate || !priority) {
             return res.status(400).send('Missing required fields');
         }
-              
-          // Send SMS notification
-            client.messages.create({
+
+        // Ensure that the dates are valid Date objects
+        const futureDateObj = new Date(futureDate);
+
+        if (isNaN(presentDate) || isNaN(futureDateObj)) {
+            return res.status(400).send('Invalid date format');
+        }
+
+        const task = new Task({
+            name,
+            presentDate,
+            futureDate: futureDateObj,
+            priority
+        });
+        
+        await task.save();
+
+        // Schedule the task for the future date
+        schedule.scheduleJob(futureDateObj, function() {
+            console.log(`Reminder for ${name}`);
+            // Here you can send an alert to the user (e.g., email, push notification, etc.)
+        });
+
+        // Send SMS notification using Twilio or similar service
+        client.messages.create({
             body: `Reminder: Call ${name} Today. It's their due date`,
             from: '+15865018127', // Replace with your Twilio phone number
-            to: fixedPhoneNumber
-          })
-              .then(message => console.log(`SMS sent: ${message.sid}`))
-              .catch(error => console.error('Error sending SMS:', error));
+            to: fixedPhoneNumber // Ensure this is set appropriately
+        })
+        .then(message => console.log(`SMS sent: ${message.sid}`))
+        .catch(error => console.error('Error sending SMS:', error));
 
         res.status(200).send('Task added successfully');
-        } catch (error) {
+    } catch (error) {
         console.error('Error adding task:', error);
         res.status(500).send('Error adding task');
     }
 });
 
-// Delete a Task (Authenticated)
-//app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
-/*app.delete('/deleteTask/:id', isAuthenticated, async (req, res) => {
->>>>>>> f70df1e56736616dbe304f806795763ce790b5e5
-    try {
-        await Task.findByIdAndDelete(req.params.id);
-        res.status(200).send('Task deleted successfully');
-    } catch (error) {
-        console.error('Error deleting task:', error);
-        res.status(500).send('Error deleting task');
-    }
-});
-
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
-});*/
 
 app.use(express.static(path.join(__dirname, 'view')));
 
